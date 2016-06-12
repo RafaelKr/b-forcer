@@ -48,6 +48,10 @@ function start() {
                     port: 8080,
                     path: '/login2',
                     method: 'POST',
+                    headers: {
+                        'Accept': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json'
+                    },
                     agent: httpAgent
                 },
                 codeGen: codeGen
@@ -119,10 +123,9 @@ function AsyncLoop( params ) {
 
 function doRequest( data ) {
     return new Promise((resolve, reject) => {
-        let code = data.codeGen.next().value;
+        let code = ('000' + data.codeGen.next().value).slice(-4);
 
         if( typeof code !== 'undefined' ) {
-
             let req = http.request( data.requestOptions, (res) => {
                 let data = '';
 
@@ -131,6 +134,10 @@ function doRequest( data ) {
                     data += chunk;
                 });
                 res.on( 'end', () => {
+                    if( code === '00m7' ) {
+                        console.log( data );
+                    }
+
                     if( JSON.parse( data ).found === true ) {
                         statistics.total.found++;
                         statistics.sinceLast.found++;
