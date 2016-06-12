@@ -75,19 +75,26 @@ if( cluster.isMaster ) {
                 worker.process.on( 'message', ( msg ) => {
                     switch( msg.type ) {
                         case 'statistics':
-                            workers[id].statistics = msg.data;
-                            statistics.succeededRequests += workers[id].statistics.sinceLast.succeededRequests;
-                            statistics.failedRequests += workers[id].statistics.sinceLast.failedRequests;
-                            statistics.found += workers[id].statistics.sinceLast.found;
-                            workers[id].statusbar.tick( workers[id].statistics.sinceLast.succeededRequests, {
+                            worker.statistics = msg.data;
+                            statistics.succeededRequests += worker.statistics.sinceLast.succeededRequests;
+                            statistics.failedRequests += worker.statistics.sinceLast.failedRequests;
+                            statistics.found += worker.statistics.sinceLast.found;
+
+                            worker.statusbar.tick( worker.statistics.sinceLast.succeededRequests, {
                                 id: id
                             });
-                            workers[id].infobar.tick( workers[id].statistics.sinceLast.succeededRequests, {
-                                failed: workers[id].statistics.total.failedRequests,
-                                found: workers[id].statistics.total.found,
-                                reqs: workers[id].statistics.sinceLast.succeededRequests + workers[id].statistics.sinceLast.failedRequests
+                            statistics.progress.statusbar.tick( worker.statistics.sinceLast.succeededRequests );
+                            worker.infobar.tick( 0, {
+                                failed: worker.statistics.total.failedRequests,
+                                found: worker.statistics.total.found,
+                                reqs: worker.statistics.sinceLast.succeededRequests + worker.statistics.sinceLast.failedRequests
                             });
-                            statistics.progress.statusbar.tick( workers[id].statistics.sinceLast.succeededRequests );
+                            statistics.progress.infobar.tick( 0, {
+                                failed: statistics.failedRequests,
+                                found: statistics.found,
+                                reqs: statistics.requestsPerSecond
+                            });
+
                             break;
                         case 'ready':
                             worker.process.send({
@@ -110,21 +117,26 @@ if( cluster.isMaster ) {
                             break;
                         case 'end':
                             worker.running = false;
-                            workers[id].statistics = msg.statistics;
+                            worker.statistics = msg.statistics;
                             statistics.runningWorkers.splice(statistics.runningWorkers.indexOf(id), 1);
 
-                            statistics.succeededRequests += workers[id].statistics.sinceLast.succeededRequests;
-                            statistics.failedRequests += workers[id].statistics.sinceLast.failedRequests;
-                            statistics.found += workers[id].statistics.sinceLast.found;
-                            workers[id].statusbar.tick( workers[id].statistics.sinceLast.succeededRequests, {
+                            statistics.succeededRequests += worker.statistics.sinceLast.succeededRequests;
+                            statistics.failedRequests += worker.statistics.sinceLast.failedRequests;
+                            statistics.found += worker.statistics.sinceLast.found;
+                            worker.statusbar.tick( worker.statistics.sinceLast.succeededRequests, {
                                 id: id
                             });
-                            workers[id].infobar.tick( workers[id].statistics.sinceLast.succeededRequests, {
-                                failed: workers[id].statistics.total.failedRequests,
-                                found: workers[id].statistics.total.found,
-                                reqs: workers[id].statistics.sinceLast.succeededRequests + workers[id].statistics.sinceLast.failedRequests
+                            statistics.progress.statusbar.tick( worker.statistics.sinceLast.succeededRequests );
+                            worker.infobar.tick( 0, {
+                                failed: worker.statistics.total.failedRequests,
+                                found: worker.statistics.total.found,
+                                reqs: worker.statistics.sinceLast.succeededRequests + worker.statistics.sinceLast.failedRequests
                             });
-                            statistics.progress.statusbar.tick( workers[id].statistics.sinceLast.succeededRequests );
+                            statistics.progress.infobar.tick( 0, {
+                                failed: statistics.failedRequests,
+                                found: statistics.found,
+                                reqs: statistics.requestsPerSecond
+                            });
                             worker.process.disconnect();
                             finished();
                             break;
@@ -157,16 +169,16 @@ if( cluster.isMaster ) {
         }
 
         setInterval(function () {
-            let reqs = 0;
+            statistics.requestsPerSecond = 0;
 
             for( let id in workers ) {
-                reqs += workers[id].statistics.sinceLast.succeededRequests + workers[id].statistics.sinceLast.failedRequests;
+                statistics.requestsPerSecond += workers[id].statistics.sinceLast.succeededRequests + workers[id].statistics.sinceLast.failedRequests;
             }
 
             statistics.progress.infobar.tick( 0, {
                 failed: statistics.failedRequests,
                 found: statistics.found,
-                reqs: reqs
+                reqs: statistics.requestsPerSecond
             });
         }, 1000);
     });

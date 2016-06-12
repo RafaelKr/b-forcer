@@ -134,10 +134,6 @@ function doRequest( data ) {
                     data += chunk;
                 });
                 res.on( 'end', () => {
-                    if( code === '00m7' ) {
-                        console.log( data );
-                    }
-
                     if( JSON.parse( data ).found === true ) {
                         statistics.total.found++;
                         statistics.sinceLast.found++;
