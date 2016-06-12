@@ -131,7 +131,6 @@ function doRequest( data ) {
                     data += chunk;
                 });
                 res.on( 'end', () => {
-                    console.log( JSON.parse( data ), JSON.parse( data ) === false );
                     if( JSON.parse( data ).found === true ) {
                         statistics.total.found++;
                         statistics.sinceLast.found++;

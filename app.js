@@ -1,3 +1,5 @@
+'use strict';
+
 const cluster = require('cluster');
 const ProgressBar = require('ascii-progress');
 
@@ -177,7 +179,7 @@ if( cluster.isMaster ) {
     });
 
 } else {
-    worker = require('./worker');
+    let worker = require('./worker');
 }
 
 function initFunctions() {
