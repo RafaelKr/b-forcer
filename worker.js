@@ -1,7 +1,5 @@
 'use strict';
 
-const http = require('http');
-
 let params;
 let statistics = {
     firstCode: null,
@@ -50,7 +48,7 @@ function start() {
                     port: 8080,
                     path: '/login2',
                     method: 'POST',
-                    agent: new http.Agent({ keepAlive: true })
+                    agent: httpAgent
                 },
                 codeGen: codeGen
             }

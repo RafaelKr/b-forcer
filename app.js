@@ -6,7 +6,9 @@ const ProgressBar = require('ascii-progress');
 // Options
 let passwordLength = 4;
 global.chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-global.connectionsPerWorker = 1;
+global.http = require('http');
+global.httpAgent = new http.Agent({ keepAlive: true });
+global.connectionsPerWorker = 10;
 
 initFunctions();
 
@@ -171,6 +173,8 @@ if( cluster.isMaster ) {
 
     Promise.all(workerPromises.finished)
     .then(() => {
+        httpAgent.destroy();
+
         let logProgress = new ProgressBar({
             schema: '\n' + formatConsoleDate(new Date()) + ' all workers finished after ' + (Date.now() - endStartTime) + ' ms'
         });
@@ -183,18 +187,6 @@ if( cluster.isMaster ) {
 }
 
 function initFunctions() {
-    // console.log = function () {
-    //     let output = arguments;
-    //
-    //     if( arguments instanceof Object && !(arguments instanceof Array) ) {
-    //         for( let key in arguments ) {
-    //             output.push( arguments[key] );
-    //         }
-    //     }
-    //
-    //     process.stdout.write( output.join(' ') );
-    // }
-
     console.debug = function() {
         let output = [formatConsoleDate(new Date())];
 
